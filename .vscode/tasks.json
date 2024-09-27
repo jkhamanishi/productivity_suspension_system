@@ -4,9 +4,22 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build",
+            "label": "build (one file)",
             "type": "shell",
-            "command": "pyinstaller -w -F --add-data 'announcement.wav;.' --log-level=WARN productivity_suspension_system.py"
+            "command": "pyinstaller --noconsole --onefile --add-data='announcement.wav;.' productivity_suspension_system.py",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build"
+            }
+        },
+        {
+            "label": "build (one folder)",
+            "type": "shell",
+            "command": "pyinstaller --noconsole --onedir --add-data='announcement.wav;.' productivity_suspension_system.py",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build"
+            }
         }
     ]
 }
