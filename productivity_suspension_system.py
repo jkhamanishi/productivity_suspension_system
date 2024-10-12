@@ -34,6 +34,8 @@ class KEYCODE:
     F15 = 102
     F16 = 103
     STOP_MEDIA = -178
+    LANG3 = 120
+    LANG4 = 119
 
 
 class ScreenController:
@@ -161,31 +163,38 @@ class Announcer:
     def stop_media():
         keyboard.send(KEYCODE.STOP_MEDIA)
     
-    def acknowledge(self):
+    def _acknowledge(self):
         self.screen.request_stop()
-        keyboard.remove_hotkey(KEYCODE.ESC)
-        self.notify_user_lock.release()
-        logger.info("Notification acknowledged.")
+        if self.notify_user_lock.locked():
+            self.notify_user_lock.release()
+            logger.info("Notification acknowledged.")
+    
+    def acknowledge(self, event: keyboard.KeyboardEvent):
+        if event.event_type == keyboard.KEY_DOWN:
+            keyboard.call_later(self._acknowledge)
     
     def _notify_user(self):
         logger.info("Notifying user.")
-        keyboard.add_hotkey(KEYCODE.ESC, self.acknowledge)
         self.stop_media()
         self.screen.blink_text()
     
-    def notify_user(self):
-        if self.notify_user_lock.acquire(blocking=False):
-            keyboard.call_later(self._notify_user)
+    def notify_user(self, event: keyboard.KeyboardEvent):
+        if event.event_type == keyboard.KEY_DOWN:
+            logger.debug("Notify user request received.")
+            if self.notify_user_lock.acquire(blocking=False):
+                keyboard.call_later(self._notify_user)
     
     def _notify_all(self):
         logger.info("Notifying everyone.")
         self.audio.play(AUDIO_FILE)
         self.notify_all_lock.release()
     
-    def notify_all(self):
-        self.notify_user()
-        if self.notify_all_lock.acquire(blocking=False):
-            keyboard.call_later(self._notify_all)
+    def notify_all(self, event: keyboard.KeyboardEvent):
+        if event.event_type == keyboard.KEY_DOWN:
+            logger.debug("Notify all request received.")
+            self.notify_user(event)
+            if self.notify_all_lock.acquire(blocking=False):
+                keyboard.call_later(self._notify_all)
 
 
 class Listener:
@@ -203,14 +212,15 @@ class Listener:
     def start(self):
         pg.init()
         pg.event.set_blocked(None)
-        keyboard.add_hotkey(KEYCODE.F13, self.announcer.notify_user)
-        keyboard.add_hotkey(KEYCODE.F14, self.announcer.notify_all)
+        keyboard.hook_key(KEYCODE.LANG3, self.announcer.notify_user)
+        keyboard.hook_key(KEYCODE.LANG4, self.announcer.notify_all)
+        keyboard.hook_key(KEYCODE.ESC, self.announcer.acknowledge)
     
     def shutdown(self):
         logger.debug("Shutting down.")
         self.announcer.screen.request_stop()
         pg.quit()
-        keyboard.unhook_all_hotkeys()
+        keyboard.unhook_all()
 
 
 if __name__ == "__main__":

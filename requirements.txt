@@ -2,4 +2,3 @@ pygame
 keyboard
 pywin32
 pyaudio
-pyinstaller
