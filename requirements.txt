@@ -2,3 +2,4 @@ pygame
 keyboard
 pywin32
 pyaudio
+pystray

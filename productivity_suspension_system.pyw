@@ -1,13 +1,15 @@
 import logging
 from threading import Event, Lock
 import os.path, sys
-import multiprocessing
 
 import keyboard
 import pygame as pg
 from win32 import win32gui
 import wave
 import pyaudio
+
+import pystray
+from PIL import Image, ImageDraw, ImageFont
 
 
 AUDIO_FILE_NAME = "announcement.wav"
@@ -23,7 +25,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(
     format="[%(levelname)s][%(asctime)s]: %(message)s", 
     datefmt="%Y-%m-%d %H:%M:%S", 
-    level=logging.DEBUG
+    level=logging.INFO
 )
 
 
@@ -197,17 +199,35 @@ class Announcer:
                 keyboard.call_later(self._notify_all)
 
 
-class Listener:
-    def __init__(self) -> None:
-        self.announcer = Announcer()
+class SystemTrayIcon(pystray.Icon):
+    def __init__(self, name) -> None:
+        super().__init__(name, self.create_image(), name, pystray.Menu(
+            pystray.MenuItem("Quit", self.stop)
+        ))
     
     @staticmethod
-    def spin():
-        logger.info("Entering spin(), press Ctrl+C to exit.")
+    def create_image():
+        image = Image.new('RGB', (64, 64), "#0067AC")
+        draw = ImageDraw.Draw(image)
+        font = ImageFont.truetype("courbd.ttf", 44)
+        draw.text((6, -8), "PS", "white", font, stroke_width=1)
+        draw.text((6, 24), "SI", "white", font, stroke_width=1)
+        return image
+
+
+class Listener:
+    def __init__(self) -> None:
+        self.name = "Productivity Suspension System Interface"
+        self.announcer = Announcer()
+        self.icon = SystemTrayIcon(self.name)
+    
+    def spin(self):
+        logger.info("Entering spin()")
         try:
-            keyboard.wait()
-        except KeyboardInterrupt:
-            logger.debug("KeyboardInterrupt received. Exiting spin().")
+            self.icon.run()
+        finally:
+            logger.debug("Exiting spin().")
+            self.icon.stop()
     
     def start(self):
         pg.init()
@@ -224,8 +244,6 @@ class Listener:
 
 
 if __name__ == "__main__":
-    multiprocessing.freeze_support()  # for pyinstaller
-    
     logger.debug("Starting script")
     listener = Listener()
     
