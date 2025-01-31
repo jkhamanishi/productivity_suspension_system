@@ -9,7 +9,7 @@ class SpeakerController:
     def play(self, filename):
         was_muted = self.volume.is_muted
         og_volume = self.volume.percent
-        self.volume.set_percent(4)
+        self.volume.set_percent(100)
         self.volume.unmute()
         self.player.play(filename)
         self.volume.set_percent(og_volume)
