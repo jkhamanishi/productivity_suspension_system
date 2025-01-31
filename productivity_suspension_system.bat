@@ -1,1 +1,1 @@
-start .venv\Scripts\pythonw.exe productivity_suspension_system.pyw
+start .venv\Scripts\pythonw.exe -m app
