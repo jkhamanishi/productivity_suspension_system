@@ -1,18 +1,17 @@
-from . import KEYCODE
 from .announcer import Announcer
-from .tray_icon import SystemTrayIcon
+from .display import SystemTrayIcon
+from .keyboard import keyboard, KEYCODE
 
-import keyboard
 import pygame as pg
 
 import logging
 logger = logging.getLogger(__name__)
 
+
 class Listener:
-    def __init__(self) -> None:
-        self.name = "Productivity Suspension System Interface"
-        self.announcer = Announcer()
-        self.icon = SystemTrayIcon(self.name)
+    def __init__(self, name: str, announcer: Announcer) -> None:
+        self.announcer = announcer
+        self.icon = SystemTrayIcon(name)
     
     def spin(self):
         logger.info("Entering spin()")

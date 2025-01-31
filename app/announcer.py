@@ -1,18 +1,19 @@
-from . import KEYCODE, AUDIO_FILE
-from .audio import AudioController
-from .overlay import ScreenOverlay
+from .speaker import SpeakerController
+from .display import ScreenOverlay
+from .keyboard import keyboard, KEYCODE
 
 from threading import Lock
-import keyboard
+
 
 import logging
 logger = logging.getLogger(__name__)
 
 
 class Announcer:
-    def __init__(self) -> None:
-        self.overlay = ScreenOverlay()
-        self.audio = AudioController()
+    def __init__(self, audio_filename: str, display:int=None, msg:str=None, font_size:int=None) -> None:
+        self.audio_filename = audio_filename
+        self.overlay = ScreenOverlay(display, msg, font_size)
+        self.audio = SpeakerController()
         self.notify_user_lock = Lock()
         self.notify_all_lock = Lock()
     
@@ -43,7 +44,7 @@ class Announcer:
     
     def _notify_all(self):
         logger.info("Notifying everyone.")
-        self.audio.play(AUDIO_FILE)
+        self.audio.play(self.audio_filename)
         self.notify_all_lock.release()
     
     def notify_all(self, event: keyboard.KeyboardEvent):

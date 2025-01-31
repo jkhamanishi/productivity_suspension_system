@@ -1,3 +1,5 @@
+# cspell:disable
+
 import pyaudio
 
 speaker_index = None

@@ -3,13 +3,17 @@ import pygame as pg
 from win32 import win32gui
 
 
+DEFAULT_DISPLAY_INDEX = 0  # Monitor/screen index
+DEFAULT_DISPLAY_MESSAGE = "SOMEBODY WANTS YOUR ATTENTION"
+DEFAULT_FONT_SIZE = 100
+
+
 class ScreenOverlay:
-    MESSAGE = "SOMEBODY WANTS YOUR ATTENTION"
-    FONT_SIZE = 100
-    DISPLAY = 0  # Monitor/screen index
-    
-    def __init__(self) -> None:
+    def __init__(self, display:int=None, msg:str=None, font_size:int=None) -> None:
         self.stop_event = Event()
+        self._display_index = display or DEFAULT_DISPLAY_INDEX
+        self._message = msg or DEFAULT_DISPLAY_MESSAGE
+        self._font_size = font_size or DEFAULT_FONT_SIZE
     
     def request_stop(self):
         self.stop_event.set()
@@ -18,7 +22,7 @@ class ScreenOverlay:
         self.stop_event.clear()
         pg.display.init()
         info = pg.display.Info()
-        self.surface = pg.display.set_mode((info.current_w, info.current_h), pg.NOFRAME, display=self.DISPLAY)
+        self.surface = pg.display.set_mode((info.current_w, info.current_h), pg.NOFRAME, display=self._display_index)
         self.surface_rect = self.surface.get_rect()
         self.move_window_to_front()
         self.init_text()
@@ -28,8 +32,8 @@ class ScreenOverlay:
         win32gui.SetWindowPos(hwnd, -1, 0, 0, 0, 0, 0x0001)
     
     def init_text(self):
-        self.font = pg.font.Font(None, ScreenOverlay.FONT_SIZE)
-        self.txt = self.font.render(ScreenOverlay.MESSAGE, True, (255, 0, 0))
+        self.font = pg.font.Font(None, self._font_size)
+        self.txt = self.font.render(self._message, True, (255, 0, 0))
         self.rect = self.txt.get_rect(center=self.surface_rect.center)
     
     def destroy_surface(self):

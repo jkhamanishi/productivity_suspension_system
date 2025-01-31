@@ -4,8 +4,11 @@ import pystray
 from PIL import Image, ImageDraw, ImageFont
 
 
+DEFAULT_NAME = "Productivity Suspension System"
+
+
 class SystemTrayIcon(pystray.Icon):
-    def __init__(self, name) -> None:
+    def __init__(self, name=DEFAULT_NAME) -> None:
         super().__init__(name, self.create_image(), name, pystray.Menu(
             pystray.MenuItem("Quit", self.stop)
         ))
